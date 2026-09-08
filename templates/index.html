@@ -1,0 +1,260 @@
+<html>
+    <head>
+        <title>To-Do List</title>
+        <style>
+            body{
+                background:linear-gradient(
+                    135deg,
+                    hsla(101, 100%, 50%, 0.5),
+                    hsla(306, 100%, 50%, 0.5)
+                )
+            }
+            .main-container{
+                background:white;
+                height:auto;
+                width:750px;
+                margin-top:85px;
+                margin-left:22%;
+                border-radius: 20px;
+                padding:20px;
+            }
+            .heading{
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin-left: 40px;
+                margin-top: 30px;
+                font-size:40px;
+
+            }
+            .sub1{
+                background:hsla(187, 98%, 50%, 0.3);
+                width:75px;
+                height:75px;
+                margin-left:650px;
+                margin-top: -90px;
+                border-radius: 10px;
+                padding:1px;
+            }
+            .text1{
+                font-size: 13px;
+                margin-top:50px;
+                margin-left:6px;
+
+            }
+            #count1{
+                margin-top: -70px;
+                font-size:30px;
+                margin-left:30px;
+                font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                font-weight: bold;
+
+            }
+            #input{
+                width:550px;
+                height:40px;
+                margin-top:15px;
+                margin-left:25px;
+                border-color: blueviolet; 
+                border-radius: 8px; 
+                font-size:large;
+            }
+            .add{
+                height:40px;
+                margin-left:10px;
+                width:140px;
+                border-radius: 8px;
+                color:white;
+                background-color: hsla(280, 100%, 50%, 0.765);
+                font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+                font-size:18px;
+                border:none;
+                cursor:pointer;
+            }
+            .add:hover{
+                transition:0.8s;
+                transform:scale(1.05);
+            }
+            .text2{
+                font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+                font-weight: bold;
+                font-size: larger;
+                padding:10px;
+            }
+            .sub2{
+                margin-top: 20px;
+                width:675px;
+                height:auto;
+                margin-left: 22px;
+                border-radius: 8px;
+                border:1px,solid,hsla(120, 3%, 14%, 0.1); 
+                padding:25px;  
+            }
+            .sub-sub1{
+                margin-top:5px;
+                background-color: hsla(197, 98%, 49%, 0.055);
+                padding:10px 15px;
+                border-radius: 10px;
+                display:flex;
+                align-items: center;
+                justify-content: space-between;
+                font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            }
+            .button2{
+                height:25px;
+                width:75px;
+                background-color: hsla(130, 100%, 50%, 0.1);
+                border-radius: 5px;
+                border:1px,solid,green;
+                margin-left: 5px;
+                color: green;
+                cursor:pointer;   
+            }
+            .button2:hover{
+                transition:0.8s;
+                transform:scale(1.05);
+            }
+            .button3{
+                margin-left:5px;
+                height:25px;
+                width:75px;
+                background-color: hsla(0, 100%, 50%, 0.1);
+                border-radius: 5px;
+                border:1px,solid,red;
+                color:red;
+                cursor:pointer;
+            }
+            .button3:hover{
+                transition:0.8s;
+                transform:scale(1.05);
+            }
+        </style>
+        <script>
+            function addtask()
+            {
+                let a = document.getElementById("input").value;
+                if(a==="")
+                  alert("Enter a task")
+                else{
+                fetch('/',{
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json'
+                    },
+                    body:JSON.stringify(
+                        {
+                            input:a,
+                            status:"pending"
+                        }
+                    )
+                }).then(respones=>respones.text())
+                .then(data=>{
+                    document.getElementById("count1").innerHTML=`${data}`
+                })
+
+                const activelist = document.getElementById("active-list");
+                const add_div = document.createElement('div');
+                add_div.className='sub-sub1'
+                add_div.innerHTML=`
+                   <span>${a}</span>
+                   <div>
+                            <button class="button2" onclick="complete(this,'${a}')"">Complete</button>
+                            <button class="button3" onclick="deletebtn(this,'${a}')"">Delete</button>
+                    </div>`
+                activelist.appendChild(add_div);
+                }
+            }
+
+
+            function complete(ref,val)
+            {
+                const active_add_div = ref.parentElement.parentElement;
+                active_add_div.remove();
+                fetch('/done',{
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json'
+                    },
+                    body:JSON.stringify(
+                        {
+                            task:val,
+                            status:"completed"
+                        }
+                    )
+                })
+                const add_history = document.getElementById("history")
+                const add_div = document.createElement('div')
+                add_div.className='sub-sub1'
+                add_div.innerHTML=`
+                <span>${val}</span>
+                <div>
+                    <label> ${new Date().toLocaleString()}</label>
+                </div>`
+                add_history.appendChild(add_div)
+
+                const add_complete = document.getElementById("complete-list");
+                const complete_div = document.createElement('div');
+                complete_div.className='sub-sub1'
+                complete_div.innerHTML = `
+                <span>${val}</span>
+                <div>
+                    <button class="button2" onclick="undo(this,'${val}')">Undo</button>
+                    <button class="button3" onclick="deletebtn(this,'${val}')">Delete</button>
+                </div>`
+                add_complete.appendChild(complete_div)
+            }
+            function undo(ref,val)
+            {
+                ref.parentElement.parentElement.remove();
+                const activelist = document.getElementById("active-list")
+                const active_div = document.createElement('div')
+                active_div.className='sub-sub1'
+                active_div.innerHTML=`
+                 <span>${val}</span>
+                   <div>
+                            <button class="button2" onclick="complete(this,'${val}')">Complete</button>
+                            <button class="button3" onclick="deletebtn(this,'${val}')">Delete</button>
+                    </div>`
+                activelist.appendChild(active_div);
+            }
+            function deletebtn(ref,val)
+            {
+                ref.parentElement.parentElement.remove();
+                fetch('/delete',{
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json'
+                    },
+                    body:JSON.stringify({
+                        task:val,
+                    })
+                }).then(respones=>respones.text())
+                .then(data=>{
+                    document.getElementById("count1").innerHTML=`${data}`
+                })
+            }
+        </script>
+    </head>
+    <body>
+        <div class="main-container">
+            <h2 class="heading">TODO-LIST</h2>
+            <div class="sub1">
+                <p class="text1">Total Count</p>
+                <p id="count1">0</p>
+            </div>
+            <input id="input" type="text" placeholder="What do you need to?" required>
+            <button class="add" onclick="addtask()">+ Add Task</button>
+            <div class="sub2" >
+                <label class="text2">📩 Active Tasks</label>
+                <div id="active-list"></div>
+            </div>
+            <div class="sub2">
+                <label class="text2">✅Completed Tasks</label>
+                <div id="complete-list"></div>
+            </div>
+            <div class="sub2">
+                <label class="text2">🕒 Task History</label>
+                <div id="history"></div>
+            </div>
+        </div>
+        
+    </body>
+</html>
