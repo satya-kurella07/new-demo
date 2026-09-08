@@ -9,9 +9,7 @@ app = Flask(__name__)
 load_dotenv()
 
 try:
-    connection = psycopg2.connect(
-        (os.getenv('DB_URL')
-    )
+    connection = psycopg2.connect (os.getenv('DB_URL'))
 
 
     cursor = connection.cursor()
